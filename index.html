@@ -1,8 +1,3 @@
-<?php
-// index.php
-require_once 'https://ethiotech.net/aba/config.php'; // Path to your config.php file
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,7 +6,6 @@ require_once 'https://ethiotech.net/aba/config.php'; // Path to your config.php 
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: #73A9C2B3;
             padding: 20px;
         }
 
@@ -148,31 +142,31 @@ require_once 'https://ethiotech.net/aba/config.php'; // Path to your config.php 
         }
 
         /* Instruction box — same height */
-       .instruction-note {
-            flex: 1;
-            background-color: #f0f8ff;
-            border: 1px solid #add8e6;
-            border-radius: 8px;
-            padding: 15px;
-            font-size: 14px;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
-            box-sizing: border-box;
-            display: flex !important;
-            flex-direction: column;
-            justify-content: flex-start; /* Change this line */
-            /* You may also consider adding align-items: flex-start; if you want items to align to the start of the cross axis (left in a column direction) */
-        }
+        .instruction-note {
+    flex: 1;
+    background-color: #f0f8ff;
+    border: 1px solid #add8e6;
+    border-radius: 8px;
+    padding: 15px;
+    font-size: 14px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+    display: flex !important;
+    flex-direction: column;
+    justify-content: flex-start; /* Change this line */
+    /* You may also consider adding align-items: flex-start; if you want items to align to the start of the cross axis (left in a column direction) */
+}
 
-        .instruction-note h3 {
-            margin-top: 0;
-            font-size: 16px;
-            color: #0074D9;
-        }
+.instruction-note h3 {
+    margin-top: 0;
+    font-size: 16px;
+    color: #0074D9;
+}
 
-        .instruction-note p {
-            margin: 0;
-            line-height: 1.5;
-        }
+.instruction-note p {
+    margin: 0;
+    line-height: 1.5;
+}
 
         /* header style */
         .form-header {
@@ -314,11 +308,12 @@ require_once 'https://ethiotech.net/aba/config.php'; // Path to your config.php 
 <body>
 
     <div class="form-header">
-  <h1 style="margin-bottom: 5px;">ABA Service Mapping and Service Monitoring Tool</h1>
+        <img src="cccmlogo.svg" alt="CCCM Cluster Logo"> 
+        <h1>CCCM Cluster Ethiopia - ABA Service Mapping and Service Monitoring Tool</h1>
     </div>
 
     <div class="general-info-container">
-         <form id="commonForm">
+        <form id="commonForm">
             <fieldset>
                 <legend>General Information</legend>
                   <div>
@@ -342,7 +337,7 @@ require_once 'https://ethiotech.net/aba/config.php'; // Path to your config.php 
         </select>
     </div>
 
-    <script src="https://ethiotech.net/aba/script.js"></script>
+    <script src="script.js"></script>
                 <label>Catchment Area: <input type="text" name="catchment" required></label>
                 <label>CRC Name: <input type="text" name="crc_name" required></label>
                 <label>Agency: <input type="text" name="agency" required></label>
@@ -351,14 +346,16 @@ require_once 'https://ethiotech.net/aba/config.php'; // Path to your config.php 
             </fieldset>
         </form>
 
-        <div id="instructionNote" class="instruction-note" style="vertical-align: top; padding-top: 0;">
+    <div id="instructionNote" class="instruction-note" style="vertical-align: top; padding-top: 0;">
     <h3>ABA:</h3>
     <p>There has been an increasing interest in area-based approaches among humanitarian actors in recent years responding to the growing complexities and protracted nature of the displacement crisis. The international humanitarian community has emphasized the importance of shifting towards a more multi-sectoral and integrated response through the World Humanitarian Summit, strategy papers by OFDA, ECHO, and UNHCR, as well as the new way of working called for by the Grand Bargain.
     Recent displacement trends show growing numbers of displaced populations living outside of designated areas such as camp/camp-like settings (traditional camps collective/transit/reception centers, informal settlements) with a majority setting in dispersed locations predominately urban and peri-urban areas such as informal settlements, unfinished buildings or interspersed in host community homes and communities, shared rooms or rental arrangements. These new trends led CCCM actors to adapt camp management tools to be able to reach, properly assess and understand local dynamics, vulnerabilities, and capacities of the displaced and host populations alike.</p>
     
-    <img src="https://ethiotech.net/aba/logo2.jpg" alt="Description of the image" style="max-width: 100%; height: auto; display: block; margin-top: 15px;">
+    <img src="logo2.jpg" alt="Description of the image" style="max-width: 100%; height: auto; display: block; margin-top: 15px;">
     
     </div>
+    
+    
     </div>
 
     <div class="sector-checkbox-container">
@@ -1022,7 +1019,7 @@ require_once 'https://ethiotech.net/aba/config.php'; // Path to your config.php 
                 markers: markers
             };
 
-            fetch('ethiotech.net/aba/save_data.php', {
+            fetch('save_data.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(postData),
@@ -1331,6 +1328,6 @@ require_once 'https://ethiotech.net/aba/config.php'; // Path to your config.php 
 
     </script>
 
-     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCbyui2JNsUNN_EvMsW2XHyQTpMUz6xfE&callback=initMap" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCbyui2JNsUNN_EvMsW2XHyQTpMUz6xfE&callback=initMap" async defer></script>
 </body>
 </html>
