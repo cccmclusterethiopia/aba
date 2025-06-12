@@ -1,3 +1,8 @@
+<?php
+// index.php
+require_once 'https://ethiotech.net/aba/config.php'; // Path to your config.php file
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1321,6 +1326,6 @@
 
     </script>
 
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCbyui2JNsUNN_EvMsW2XHyQTpMUz6xfE&callback=initMap" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=<?php echo Maps_API_KEY; ?>&callback=initMap" async defer></script>
 </body>
 </html>
