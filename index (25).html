@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>ABA Service Mapping Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        /* Styles for horizontal sector list */
+        .sector-checkbox-container {
+            display: flex;
+            flex-wrap: wrap; /* Allows items to wrap to the next line on smaller screens */
+            gap: 15px; /* Adds space between items */
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            background-color: #fcfcfc;
+        }
+
+        .sector-checkbox-container label {
+            white-space: nowrap; /* Prevents labels from breaking into multiple lines */
+            display: flex; /* Aligns checkbox and text nicely */
+            align-items: center;
+        }
+
+        .sector-checkbox-container input[type="checkbox"] {
+            margin-right: 5px; /* Space between checkbox and text */
+        }
+
+        .sector-section {
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-top: 15px;
+            padding: 15px;
+            display: none;
+        }
+
+        .sector-section.active {
+            display: block;
+        }
+
+        fieldset {
+            margin-bottom: 15px;
+            padding: 10px;
+        }
+
+        .disabled input,
+        .disabled select,
+        .disabled textarea {
+            background-color: #e0e0e0;
+        }
+
+        .map-container {
+            margin-top: 10px;
+        }
+
+        .map {
+            height: 300px;
+            width: 100%;
+            pointer-events: none;
+            opacity: 0.6;
+            border: 1px solid #aaa;
+            border-radius: 4px;
+        }
+
+        .map.active {
+            pointer-events: auto;
+            opacity: 1;
+        }
+
+        .save-btn {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        /* Style for the general info container */
+        .general-info-container {
+            display: flex;
+            align-items: stretch; /* Makes both boxes equal height */
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* General Info Box */
+        #commonForm {
+            flex: 1;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            font-size: 14px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Ensure it fills the available height */
+        #commonForm fieldset {
+            border: none;
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        #commonForm legend {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        #commonForm label {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+            color: #444;
+        }
+
+        #commonForm input[type="text"],
+        #commonForm input[type="month"] {
+            width: 100%; /* Fixes overflow */
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 13px;
+            box-sizing: border-box;
+        }
+
+        /* Instruction box — same height */
+        .instruction-note {
+            flex: 1;
+            background-color: #f0f8ff;
+            border: 1px solid #add8e6;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 14px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            display: flex !important; /* Override any potential 'display: none' from other scripts/styles */
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .instruction-note h3 {
+            margin-top: 0;
+            font-size: 16px;
+            color: #0074D9;
+        }
+
+        .instruction-note p {
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* header style */
+        .form-header {
+            background-color: rgb(27, 101, 124);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex; /* ✨ Added for aligning logo and text */
+            align-items: center; /* ✨ Vertically align items */
+            justify-content: center; /* ✨ Center horizontally */
+            gap: 15px; /* ✨ Space between logo and text */
+        }
+        
+        .form-header img {
+        height: 50px; /* ✨ Adjust as needed */
+        width: auto; /* ✨ Maintain aspect ratio */
+        }
+
+        .form-header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* New styles for the map display and filters */
+        .map-display-section {
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+
+        .map-display-section h3 {
+            color: #333;
+            margin-top: 0;
+        }
+
+        .filter-controls {
+            margin-bottom: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .filter-controls label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .filter-controls select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        #dataMap {
+            height: 450px; /* Make the map larger */
+            width: 100%;
+            border: 1px solid #aaa;
+            border-radius: 4px;
+        }
+
+        /* --- Responsiveness --- */
+
+        /* General styles for form elements */
+        input[type="text"],
+        input[type="number"],
+        input[type="month"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box; /* Ensures padding doesn't add to the width */
+            font-size: 14px;
+        }
+
+        /* Adjustments for smaller screens (e.g., mobile phones) */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .general-info-container {
+                flex-direction: column; /* Stacks general info and instruction vertically */
+                gap: 15px;
+            }
+
+            .sector-checkbox-container {
+                flex-direction: column; /* Stacks checkboxes vertically on very small screens */
+                gap: 10px;
+            }
+
+            .filter-controls {
+                grid-template-columns: 1fr; /* Single column for filters on small screens */
+            }
+
+            .sector-section {
+                padding: 10px;
+            }
+
+            .map {
+                height: 250px; /* Slightly smaller maps on mobile */
+            }
+
+            #dataMap {
+                height: 350px; /* Slightly smaller data map on mobile */
+            }
+        }
+
+        /* Adjustments for medium screens (e.g., tablets) */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            body {
+                padding: 15px;
+            }
+
+            .general-info-container {
+                flex-direction: row; /* Keep side-by-side but allow wrapping if needed */
+                gap: 15px;
+            }
+
+            .filter-controls {
+                grid-template-columns: repeat(2, 1fr); /* Two columns for filters on tablets */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-header">
+        <img src="cccmlogo.svg" alt="CCCM Cluster Logo"> 
+        <h1>CCCM Cluster Ethiopia - ABA Service Mapping and Service Monitoring Tool</h1>
+    </div>
+
+    <div class="general-info-container">
+        <form id="commonForm">
+            <fieldset>
+                <legend>General Information</legend>
+                  <div>
+        <label for="region">Region:</label>
+        <select id="region">
+            <option value="">Select Region</option>
+        </select>
+    </div>
+
+    <div>
+        <label for="zone">Zone:</label>
+        <select id="zone" disabled>
+            <option value="">Select Zone</option>
+        </select>
+    </div>
+
+    <div>
+        <label for="woreda">Woreda:</label>
+        <select id="woreda" disabled>
+            <option value="">Select Woreda</option>
+        </select>
+    </div>
+
+    <script src="script.js"></script>
+                <label>Catchment Area: <input type="text" name="catchment" required></label>
+                <label>CRC Name: <input type="text" name="crc_name" required></label>
+                <label>Agency: <input type="text" name="agency" required></label>
+                <label>Submitted By: <input type="text" name="submitted_by" required></label>
+                <label>Reporting Period: <input type="month" name="reporting_period" required></label>
+            </fieldset>
+        </form>
+
+        <div id="instructionNote" class="instruction-note">
+            <h3>Instructions:</h3>
+            <p>Please select a sector to begin filling out the relevant questions and map information.</p>
+        </div>
+    </div>
+
+    <div class="sector-checkbox-container">
+        <label><input type="checkbox" id="cccmCheck"> CCCM</label>
+        <label><input type="checkbox" id="foodCheck"> Food Security</label>
+        <label><input type="checkbox" id="washCheck"> WASH</label>
+        <label><input type="checkbox" id="healthCheck"> Health</label>
+        <label><input type="checkbox" id="nutritionCheck"> Nutrition</label>
+        <label><input type="checkbox" id="protectionCheck"> Protection</label>
+        <label><input type="checkbox" id="esnfiCheck"> ESNFI</label>
+        <label><input type="checkbox" id="educationCheck"> Education</label>
+        <label><input type="checkbox" id="otherCheck"> Other</label>
+        <label style="display: none;"><input type="checkbox" id="serviceMapCheck"> View Service Map</label>
+    </div>
+    
+    <div id="otherServicesContainer">
+    </div>
+
+<button type="button" id="addOtherServiceButton" style="display: none;">Add Another Other Service</button>
+
+    <div id="cccmSection" class="sector-section">
+        <h3>CCCM Questions</h3>
+
+        <form id="cccmForm">
+            <fieldset>
+                <legend>Are community committees formed in the catchment area?</legend>
+                <label><input type="radio" name="cccm_q1" value="Yes"> Yes</label>
+                <label><input type="radio" name="cccm_q1" value="No"> No</label>
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Number of coordination meetings conducted:</legend>
+                <input type="number" name="cccm_q2" />
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset style="display: none;">
+                <legend>CCCM Agency</legend>
+                <textarea rows="2" name="cccm_q_comm_center" class="comm-center" style="width: 100%;"></textarea>
+            </fieldset>
+
+            <fieldset style="display: none;">
+            <legend>Which agency or agencies are functioning in the catchment area (outside the community centers)?</legend>
+            <textarea rows="2" name="cccm_q_catchment" class="catchment" style="width: 100%;" oninput="enableMap(this)"></textarea>
+            </fieldset>
+
+            <div class="map-container" style="display: none;">
+                <div class="map" id="map_cccm"></div>
+            </div>
+
+            <button type="button" class="save-btn" onclick="saveModalData('cccm')">Save</button>
+        </form>
+    </div>
+
+    <div id="foodSection" class="sector-section">
+        <h3>Food Security Questions</h3>
+
+        <form id="foodForm">
+            <fieldset>
+                <legend>When was the last time food was distributed?</legend>
+                <select name="food_q1">
+                    <option value="">Select</option>
+                    <option value="Less than a month">Less than a month</option>
+                    <option value="Between 1 - 2 months">Between 1 - 2 month</option>
+                    <option value="More than 2 months">More than 2 month</option>
+                </select>
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Do IDPs have access to a market?</legend>
+                <label><input type="radio" name="food_q2" value="Yes"> Yes</label>
+                <label><input type="radio" name="food_q2" value="No"> No</label>
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Which agency or agencies are functioning in the community center?</legend>
+                <textarea rows="2" name="food_q_comm_center" class="comm-center" style="width: 100%;"></textarea>
+            </fieldset>
+
+            <fieldset>
+                <legend>Which agency or agencies are functioning in the catchment area (outside the community centers)?</legend>
+                <textarea rows="2" name="food_q_catchment" class="catchment" style="width: 100%;" oninput="enableMap(this)"></textarea>
+            </fieldset>
+
+            <div class="map-container">
+                <div class="map" id="map_food"></div>
+            </div>
+
+            <button type="button" class="save-btn" onclick="saveModalData('food')">Save</button>
+        </form>
+    </div>
+
+    <div id="washSection" class="sector-section">
+        <h3>WASH Questions</h3>
+
+        <form id="washForm">
+            <fieldset>
+                <legend>What is the longest observed walking distance any household in this area typically travels to reach their primary water source?</legend>
+                <label><input type="radio" name="wash_q1" value="< 1km"> &lt; 1km</label>
+                <label><input type="radio" name="wash_q1" value="1-5 km"> 1-5 km</label>
+                <label><input type="radio" name="wash_q1" value="> 5km"> &gt; 5km</label>
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>How often is water typically available in the area?</legend>
+                <select name="wash_q2">
+                    <option value="">Select</option>
+                    <option value="Always available"> Always available</option>
+                    <option value="A few times per week">A few times per week</option>
+                    <option value="Less than once every two weeks"> Less than once every two weeks</option>
+                </select>
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Is there an adequate waste disposal system in the area?</legend>
+                <label><input type="radio" name="wash_q8" value="Yes"> Yes</label>
+                <label><input type="radio" name="wash_q8" value="No"> No</label>
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+              
+            </fieldset>
+
+            <fieldset>
+                <legend>When was the hygiene kits distributed to households?</legend>
+                <select name="wash_q9">
+                    <option value="">Select</option>
+                    <option value="< a month"> &lt; a month</option>
+                    <option value="1-2 month">1-2 month</option>
+                    <option value="> 2 month"> &gt; 2 month</option>
+                </select>
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>When was the dignity kits distributed to the women?</legend>
+                <select name="wash_q10">
+                    <option value="">Select</option>
+                    <option value="< a month"> &lt; a month</option>
+                    <option value="1-2 month">1-2 month</option>
+                    <option value="> 2 month"> &gt; 2 month</option>
+                </select>
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Do you observe open defecation?</legend>
+                <label><input type="radio" name="wash_q11" value="Yes"> Yes</label>
+                <label><input type="radio" name="wash_q11" value="No"> No</label>
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Are there stagnant water pits/potholes?</legend>
+                <label><input type="radio" name="wash_q12" value="Yes"> Yes</label>
+                <label><input type="radio" name="wash_q12" value="No"> No</label>
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Which agency or agencies are functioning in the community center?</legend>
+                <textarea rows="2" name="wash_q_comm_center" class="comm-center" style="width: 100%;"></textarea>
+            </fieldset>
+
+            <fieldset>
+                <legend>Which agency or agencies are functioning in the catchment area (outside the community centers)?</legend>
+                <textarea rows="2" name="wash_q_catchment" class="catchment" style="width: 100%;" oninput="enableMap(this)"></textarea>
+            </fieldset>
+
+            <div class="map-container">
+                <div class="map" id="map_wash"></div>
+            </div>
+
+            <button type="button" class="save-btn" onclick="saveModalData('wash')">Save</button>
+        </form>
+    </div>
+
+    <div id="healthSection" class="sector-section">
+        <h3>Health Questions</h3>
+
+        <form id="healthForm">
+            <fieldset>
+                <legend>How many functioning health facilities are there in the catchment area?</legend>
+                <input type="number" name="health_q1" />
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>What is the furthest distance households in this area usually walk to reach their main health facility?</legend>
+                <label><input type="radio" name="health_q2" value="< 1km"> &lt; 1km</label>
+                <label><input type="radio" name="health_q2" value="1-5 km"> 1-5 km</label>
+                <label><input type="radio" name="health_q2" value="> 5km"> &gt; 5km</label>
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Which agency or agencies are functioning in the community center?</legend>
+                <textarea rows="2" name="health_q_comm_center" class="comm-center" style="width: 100%;"></textarea>
+            </fieldset>
+
+            <fieldset>
+                <legend>Which agency or agencies are functioning in the catchment area (outside the community centers)?</legend>
+                <textarea rows="2" name="health_q_catchment" class="catchment" style="width: 100%;" oninput="enableMap(this)"></textarea>
+            </fieldset>
+
+            <div class="map-container">
+                <div class="map" id="map_health"></div>
+            </div>
+
+            <button type="button" class="save-btn" onclick="saveModalData('health')">Save</button>
+        </form>
+    </div>
+
+    <div id="nutritionSection" class="sector-section">
+        <h3>Nutrition Questions</h3>
+
+        <form id="nutritionForm">
+            <fieldset>
+                <legend>Was MUAC screening conducted in the catchment area in the past two months?</legend>
+                <label><input type="radio" name="nutrition_q1" value="Yes"> Yes</label>
+                <label><input type="radio" name="nutrition_q1" value="No"> No</label>
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Number of children identified with SAM (115 mm MUAC)</legend>
+                <input type="number" name="nutrition_q2" />
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Number of children identified with GAM (125 mm MUAC)</legend>
+                <input type="number" name="nutrition_q3" />
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Which agency or agencies are functioning in the community center?</legend>
+                <textarea rows="2" name="nutrition_q_comm_center" class="comm-center" style="width: 100%;"></textarea>
+            </fieldset>
+
+            <fieldset>
+                <legend>Which agency or agencies are functioning in the catchment area (outside the community centers)?</legend>
+                <textarea rows="2" name="nutrition_q_catchment" class="catchment" style="width: 100%;" oninput="enableMap(this)"></textarea>
+            </fieldset>
+
+            <div class="map-container">
+                <div class="map" id="map_nutrition"></div>
+            </div>
+
+            <button type="button" class="save-btn" onclick="saveModalData('nutrition')">Save</button>
+        </form>
+    </div>
+
+    <div id="protectionSection" class="sector-section">
+        <h3>Protection Questions</h3>
+
+        <form id="protectionForm">
+            <fieldset>
+                <legend>Is protection monitoring taking place in the catchment area?</legend>
+                <label><input type="radio" name="protection_q1" value="Yes"> Yes</label>
+                <label><input type="radio" name="protection_q1" value="No"> No</label>
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Are there women and children’s safe spaces available at the community center?</legend>
+                <label><input type="radio" name="protection_q2" value="Yes"> Yes</label>
+                <label><input type="radio" name="protection_q2" value="No"> No</label>
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>How many child protection social workers are present and operational in the catchment area?</legend>
+                <input type="number" name="protection_q3" />
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Is MHPSS (Mental Health and Psychosocial Support) being provided in the catchment area?</legend>
+                <label><input type="radio" name="protection_q5" value="Yes"> Yes</label>
+                <label><input type="radio" name="protection_q5" value="No"> No</label>
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Which agency or agencies are functioning in the community center?</legend>
+                <textarea rows="2" name="protection_q_comm_center" class="comm-center" style="width: 100%;"></textarea>
+            </fieldset>
+
+            <fieldset>
+                <legend>Which agency or agencies are functioning in the catchment area (outside the community centers)?</legend>
+                <textarea rows="2" name="protection_q_catchment" class="catchment" style="width: 100%;" oninput="enableMap(this)"></textarea>
+            </fieldset>
+
+            <div class="map-container">
+                <div class="map" id="map_protection"></div>
+            </div>
+
+            <button type="button" class="save-btn" onclick="saveModalData('protection')">Save</button>
+        </form>
+    </div>
+
+    <div id="esnfiSection" class="sector-section">
+        <h3>ESNFI Questions</h3>
+
+        <form id="esnfiForm">
+            <fieldset>
+                <legend>Was there any distribution of emergency shelter materials in the catchment area?</legend>
+                <label><input type="radio" name="esnfi_q1" value="Yes" onchange="toggleESNFIQuestions(true)"> Yes</label>
+                <label><input type="radio" name="esnfi_q1" value="No" onchange="toggleESNFIQuestions(false)"> No</label>
+                <label><input type="checkbox" onchange="toggleDisabled(this); toggleESNFIQuestions(false, true)"> Not Applicable</label>
+            </fieldset>
+
+            <div id="esnfi_q1_followup" style="display: none;">
+                <fieldset>
+                    <legend>When was it distributed?</legend>
+                    <input type="month" name="esnfi_q1_date" />
+                </fieldset>
+
+                <fieldset>
+                    <legend>How many households were covered?</legend>
+                    <input type="number" name="esnfi_q1_households" />
+                </fieldset>
+            </div>
+
+            <fieldset>
+                <legend>What is the percentage of households that received Non-Food Items (NFIs) in the last 6 months?</legend>
+                <select name="esnfi_q3">
+                    <option value="">Select</option>
+                    <option value="0%">0%</option>
+                    <option value="1%-25%">1%-25%</option>
+                    <option value="25%-50%">25%-50%</option>
+                    <option value="51%-75%">51%-75%</option>
+                    <option value="75%-90%">75%-90%</option>
+                    <option value="91%-100%">91%-100%</option>
+                </select>
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Which agency or agencies are functioning in the community center?</legend>
+                <textarea rows="2" name="esnfi_q_comm_center" class="comm-center" style="width: 100%;"></textarea>
+            </fieldset>
+
+            <fieldset>
+                <legend>Which agency or agencies are functioning in the catchment area (outside the community centers)?</legend>
+                <textarea rows="2" name="esnfi_q_catchment" class="catchment" style="width: 100%;" oninput="enableMap(this)"></textarea>
+            </fieldset>
+
+            <div class="map-container">
+                <div class="map" id="map_esnfi"></div>
+            </div>
+
+            <button type="button" class="save-btn" onclick="saveModalData('esnfi')">Save</button>
+        </form>
+    </div>
+
+    <div id="educationSection" class="sector-section">
+        <h3>Education Questions</h3>
+
+        <form id="educationForm">
+            
+            <fieldset>
+                <legend>Number of temporary learning centers (TLCs)</legend>
+                <input type="number" name="education_q2" />
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>What is the longest walking distance typically traveled by students in this area to reach their school?</legend>
+                <label><input type="radio" name="education_q3" value="< 1 km"> &lt; 1 km</label>
+                <label><input type="radio" name="education_q3" value="1 - 5 km"> 1 - 5 km</label>
+                <label><input type="radio" name="education_q3" value="> 5 km"> &gt; 5 km</label>
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Which agency or agencies are functioning in the community center?</legend>
+                <textarea rows="2" name="education_q_comm_center" class="comm-center" style="width: 100%;"></textarea>
+            </fieldset>
+
+            <fieldset>
+                <legend>Which agency or agencies are functioning in the catchment area (outside the community centers)?</legend>
+                <textarea rows="2" name="education_q_catchment" class="catchment" style="width: 100%;" oninput="enableMap(this)"></textarea>
+            </fieldset>
+
+            <div class="map-container">
+                <div class="map" id="map_education"></div>
+            </div>
+
+            <button type="button" class="save-btn" onclick="saveModalData('education')">Save</button>
+        </form>
+    </div>
+
+    <div id="otherSection" class="sector-section">
+        <h3>Other Sector Questions</h3>
+
+        <form id="otherForm">
+            <fieldset>
+                <legend>Service Type</legend>
+                <input type="text" name="other_q1_service_type" />
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Description of the Service</legend>
+                <textarea rows="3" name="other_q2_service_description" style="width: 100%;"></textarea>
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Number of Service Providers</legend>
+                <input type="number" name="other_q3_service_providers" />
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Which population is targeted?</legend>
+                <input type="text" name="other_q4_targeted_population" />
+                <label><input type="checkbox" onchange="toggleDisabled(this)"> Not Applicable</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Which agency or agencies are functioning in the community center?</legend>
+                <textarea rows="2" name="other_q_comm_center" class="comm-center" style="width: 100%;"></textarea>
+            </fieldset>
+
+            <fieldset>
+                <legend>Which agency or agencies are functioning in the catchment area (outside the community centers)?</legend>
+                <textarea rows="2" name="other_q_catchment" class="catchment" style="width: 100%;" oninput="enableMap(this)"></textarea>
+            </fieldset>
+
+            <div class="map-container">
+                <div class="map" id="map_other"></div>
+            </div>
+
+            <button type="button" class="save-btn" onclick="saveModalData('other')">Save</button>
+        </form>
+    </div>
+
+
+    <div id="serviceMapSection" class="sector-section">
+        <h3>Service Map Display</h3>
+        <div class="filter-controls">
+            <div>
+                <label for="filterRegion">Region:</label>
+                <select id="filterRegion" onchange="filterMapData()"></select>
+            </div>
+            <div>
+                <label for="filterZone">Zone:</label>
+                <select id="filterZone" onchange="filterMapData()"></select>
+            </div>
+            <div>
+                <label for="filterWoreda">Woreda:</label>
+                <select id="filterWoreda" onchange="filterMapData()"></select>
+            </div>
+            <div>
+                <label for="filterKebele">Kebele:</label>
+                <select id="filterKebele" onchange="filterMapData()"></select>
+            </div>
+        </div>
+        <div id="dataMap"></div>
+    </div>
+
+
+    <script>
+        function toggleDisabled(checkbox) {
+            const fieldset = checkbox.closest("fieldset");
+            if (checkbox.checked) {
+                fieldset.classList.add("disabled");
+                fieldset.querySelectorAll("input, select, textarea").forEach(el => {
+                    if (el !== checkbox) el.disabled = true;
+                });
+            } else {
+                fieldset.classList.remove("disabled");
+                fieldset.querySelectorAll("input, select, textarea").forEach(el => el.disabled = false);
+            }
+        }
+
+        // Function to toggle ESNFI follow-up questions
+        function toggleESNFIQuestions(show, isNotApplicable = false) {
+            const followupDiv = document.getElementById('esnfi_q1_followup');
+            const dateInput = followupDiv.querySelector('input[name="esnfi_q1_date"]');
+            const householdsInput = followupDiv.querySelector('input[name="esnfi_q1_households"]');
+
+            if (show && !isNotApplicable) {
+                followupDiv.style.display = 'block';
+                dateInput.disabled = false;
+                householdsInput.disabled = false;
+            } else {
+                followupDiv.style.display = 'none';
+                dateInput.disabled = true;
+                householdsInput.disabled = true;
+                // Clear values when hidden or Not Applicable
+                dateInput.value = '';
+                householdsInput.value = '';
+            }
+        }
+
+
+        document.getElementById('cccmCheck').addEventListener('change', function () {
+            const section = document.getElementById('cccmSection');
+            section.classList.toggle('active', this.checked);
+        });
+
+        document.getElementById('foodCheck').addEventListener('change', function () {
+            const section = document.getElementById('foodSection');
+            section.classList.toggle('active', this.checked);
+        });
+
+        document.getElementById('washCheck').addEventListener('change', function () {
+            const section = document.getElementById('washSection');
+            section.classList.toggle('active', this.checked);
+        });
+
+        document.getElementById('healthCheck').addEventListener('change', function () {
+            const section = document.getElementById('healthSection');
+            section.classList.toggle('active', this.checked);
+        });
+
+        document.getElementById('nutritionCheck').addEventListener('change', function () {
+            const section = document.getElementById('nutritionSection');
+            section.classList.toggle('active', this.checked);
+        });
+
+        document.getElementById('protectionCheck').addEventListener('change', function () {
+            const section = document.getElementById('protectionSection');
+            section.classList.toggle('active', this.checked);
+        });
+
+        // Event listener for ESNFI checkbox
+        document.getElementById('esnfiCheck').addEventListener('change', function () {
+            const section = document.getElementById('esnfiSection');
+            section.classList.toggle('active', this.checked);
+            // If ESNFI section becomes active, ensure initial state of conditional questions is correct
+            if (this.checked) {
+                // Check the initial state of the radio buttons for q1
+                const radioYes = document.querySelector('#esnfiForm input[name="esnfi_q1"][value="Yes"]');
+                const radioNo = document.querySelector('#esnfiForm input[name="esnfi_q1"][value="No"]');
+                const notApplicable = document.querySelector('#esnfiForm input[name="esnfi_q1"] + input[type="checkbox"]');
+
+                if (notApplicable && notApplicable.checked) {
+                    toggleESNFIQuestions(false, true);
+                } else if (radioYes && radioYes.checked) {
+                    toggleESNFIQuestions(true);
+                } else {
+                    toggleESNFIQuestions(false);
+                }
+            }
+        });
+
+        // New event listener for Education checkbox
+        document.getElementById('educationCheck').addEventListener('change', function () {
+            const section = document.getElementById('educationSection');
+            section.classList.toggle('active', this.checked);
+        });
+
+        // New event listener for Other checkbox
+        document.getElementById('otherCheck').addEventListener('change', function () {
+            const section = document.getElementById('otherSection');
+            section.classList.toggle('active', this.checked);
+        });
+
+
+        // Event listener for the new "View Service Map" checkbox
+        document.getElementById('serviceMapCheck').addEventListener('change', function() {
+            const section = document.getElementById('serviceMapSection');
+            section.classList.toggle('active', this.checked);
+            if (this.checked) {
+                // Initialize or refresh the data map when this section becomes active
+                loadAndDisplayMapData();
+            }
+        });
+
+
+        function enableMap(textarea) {
+            const mapDiv = textarea.closest("form").querySelector(".map");
+            mapDiv.classList.toggle("active", textarea.value.trim() !== "");
+        }
+
+        function saveModalData(type) {
+            const form = document.getElementById(type + "Form");
+            const saveBtn = form.querySelector(".save-btn");
+
+            if (!confirm("Are you sure to submit this data?")) return;
+
+            const formData = new FormData(document.getElementById("commonForm"));
+            const sectorData = new FormData(form);
+            for (const [key, value] of sectorData.entries()) {
+                formData.append(key, value);
+            }
+
+            const dataObj = {};
+            for (const [key, value] of formData.entries()) {
+                if (dataObj[key]) {
+                    if (Array.isArray(dataObj[key])) {
+                        dataObj[key].push(value);
+                    } else {
+                        dataObj[key] = [dataObj[key], value];
+                    }
+                } else {
+                    dataObj[key] = value;
+                }
+            }
+
+            let markers = [];
+            if (type === "cccm") {
+                markers = markersCCCM.map(marker => {
+                    const pos = marker.getPosition();
+                    return { lat: pos.lat(), lng: pos.lng(), name: marker.pointName || "" };
+                });
+            } else if (type === "food") {
+                markers = markersFood.map(marker => {
+                    const pos = marker.getPosition();
+                    return { lat: pos.lat(), lng: pos.lng(), name: marker.pointName || "" };
+                });
+            } else if (type === "wash") {
+                markers = markersWASH.map(marker => {
+                    const pos = marker.getPosition();
+                    return { lat: pos.lat(), lng: pos.lng(), name: marker.pointName || "" };
+                });
+            } else if (type === "health") {
+                markers = markersHealth.map(marker => {
+                    const pos = marker.getPosition();
+                    return { lat: pos.lat(), lng: pos.lng(), name: marker.pointName || "" };
+                });
+            } else if (type === "nutrition") {
+                markers = markersNutrition.map(marker => {
+                    const pos = marker.getPosition();
+                    return { lat: pos.lat(), lng: pos.lng(), name: marker.pointName || "" };
+                });
+            } else if (type === "protection") {
+                markers = markersProtection.map(marker => {
+                    const pos = marker.getPosition();
+                    return { lat: pos.lat(), lng: pos.lng(), name: marker.pointName || "" };
+                });
+            } else if (type === "esnfi") {
+                markers = markersESNFI.map(marker => {
+                    const pos = marker.getPosition();
+                    return { lat: pos.lat(), lng: pos.lng(), name: marker.pointName || "" };
+                });
+            } else if (type === "education") {
+                markers = markersEducation.map(marker => {
+                    const pos = marker.getPosition();
+                    return { lat: pos.lat(), lng: pos.lng(), name: marker.pointName || "" };
+                });
+            } else if (type === "other") { // Added for Other
+                markers = markersOther.map(marker => {
+                    const pos = marker.getPosition();
+                    return { lat: pos.lat(), lng: pos.lng(), name: marker.pointName || "" };
+                });
+            }
+
+            const postData = {
+                type: type,
+                formData: dataObj,
+                markers: markers
+            };
+
+            fetch('save_data.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(postData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(type.toUpperCase() + " data saved successfully!");
+                    saveBtn.disabled = true;
+                    saveBtn.style.backgroundColor = '#888';
+                    saveBtn.style.cursor = 'not-allowed';
+                } else {
+                    alert("Error saving data: " + data.message);
+                }
+            })
+            .catch(error => {
+                alert("Error: " + error.message);
+            });
+        }
+
+        // Google Maps for data entry
+        let mapCCCM, mapFood, mapWASH, mapHealth, mapNutrition, mapProtection, mapESNFI, mapEducation, mapOther; // Added mapOther
+        let markersCCCM = [], markersFood = [], markersWASH = [], markersHealth = [], markersNutrition = [], markersProtection = [], markersESNFI = [], markersEducation = [], markersOther = []; // Added markersOther
+
+        // Google Map for displaying cPanel data
+        let dataMap;
+        let allServicePoints = []; // To store all fetched data points
+        let serviceMarkers = []; // To store markers on the data map
+
+        function initMap() {
+            mapCCCM = new google.maps.Map(document.getElementById("map_cccm"), {
+                center: { lat: 9.145, lng: 40.4897 },
+                zoom: 6,
+            });
+
+            mapCCCM.addListener("click", (e) => {
+                if (!document.getElementById("map_cccm").classList.contains("active")) return;
+                const marker = new google.maps.Marker({ position: e.latLng, map: mapCCCM });
+                const pointName = prompt("Enter name for this point:");
+                if (!pointName) return marker.setMap(null);
+                marker.pointName = pointName;
+                const infoWindow = new google.maps.InfoWindow({ content: `<strong>${pointName}</strong>` });
+                marker.addListener("click", () => infoWindow.open(mapCCCM, marker));
+                markersCCCM.push(marker);
+            });
+
+            mapFood = new google.maps.Map(document.getElementById("map_food"), {
+                center: { lat: 9.145, lng: 40.4897 },
+                zoom: 6,
+            });
+
+            mapFood.addListener("click", (e) => {
+                if (!document.getElementById("map_food").classList.contains("active")) return;
+                const marker = new google.maps.Marker({ position: e.latLng, map: mapFood });
+                const pointName = prompt("Enter name for this point:");
+                if (!pointName) return marker.setMap(null);
+                marker.pointName = pointName;
+                const infoWindow = new google.maps.InfoWindow({ content: `<strong>${pointName}</strong>` });
+                marker.addListener("click", () => infoWindow.open(mapFood, marker));
+                markersFood.push(marker);
+            });
+
+            // Initialize the WASH map
+            mapWASH = new google.maps.Map(document.getElementById("map_wash"), {
+                center: { lat: 9.145, lng: 40.4897 },
+                zoom: 6,
+            });
+
+            mapWASH.addListener("click", (e) => {
+                if (!document.getElementById("map_wash").classList.contains("active")) return;
+                const marker = new google.maps.Marker({ position: e.latLng, map: mapWASH });
+                const pointName = prompt("Enter name for this point:");
+                if (!pointName) return marker.setMap(null);
+                marker.pointName = pointName;
+                const infoWindow = new google.maps.InfoWindow({ content: `<strong>${pointName}</strong>` });
+                marker.addListener("click", () => infoWindow.open(mapWASH, marker));
+                markersWASH.push(marker);
+            });
+
+            // Initialize the Health map
+            mapHealth = new google.maps.Map(document.getElementById("map_health"), {
+                center: { lat: 9.145, lng: 40.4897 },
+                zoom: 6,
+            });
+
+            mapHealth.addListener("click", (e) => {
+                if (!document.getElementById("map_health").classList.contains("active")) return;
+                const marker = new google.maps.Marker({ position: e.latLng, map: mapHealth });
+                const pointName = prompt("Enter name for this point:");
+                if (!pointName) return marker.setMap(null);
+                marker.pointName = pointName;
+                const infoWindow = new google.maps.InfoWindow({ content: `<strong>${pointName}</strong>` });
+                marker.addListener("click", () => infoWindow.open(mapHealth, marker));
+                markersHealth.push(marker);
+            });
+
+            // Initialize the Nutrition map
+            mapNutrition = new google.maps.Map(document.getElementById("map_nutrition"), {
+                center: { lat: 9.145, lng: 40.4897 },
+                zoom: 6,
+            });
+
+            mapNutrition.addListener("click", (e) => {
+                if (!document.getElementById("map_nutrition").classList.contains("active")) return;
+                const marker = new google.maps.Marker({ position: e.latLng, map: mapNutrition });
+                const pointName = prompt("Enter name for this point:");
+                if (!pointName) return marker.setMap(null);
+                marker.pointName = pointName;
+                const infoWindow = new google.maps.InfoWindow({ content: `<strong>${pointName}</strong>` });
+                marker.addListener("click", () => infoWindow.open(mapNutrition, marker));
+                markersNutrition.push(marker);
+            });
+
+            // Initialize the Protection map
+            mapProtection = new google.maps.Map(document.getElementById("map_protection"), {
+                center: { lat: 9.145, lng: 40.4897 },
+                zoom: 6,
+            });
+
+            mapProtection.addListener("click", (e) => {
+                if (!document.getElementById("map_protection").classList.contains("active")) return;
+                const marker = new google.maps.Marker({ position: e.latLng, map: mapProtection });
+                const pointName = prompt("Enter name for this point:");
+                if (!pointName) return marker.setMap(null);
+                marker.pointName = pointName;
+                const infoWindow = new google.maps.InfoWindow({ content: `<strong>${pointName}</strong>` });
+                marker.addListener("click", () => infoWindow.open(mapProtection, marker));
+                markersProtection.push(marker);
+            });
+
+            // Initialize the ESNFI map
+            mapESNFI = new google.maps.Map(document.getElementById("map_esnfi"), {
+                center: { lat: 9.145, lng: 40.4897 },
+                zoom: 6,
+            });
+
+            mapESNFI.addListener("click", (e) => {
+                if (!document.getElementById("map_esnfi").classList.contains("active")) return;
+                const marker = new google.maps.Marker({ position: e.latLng, map: mapESNFI });
+                const pointName = prompt("Enter name for this point:");
+                if (!pointName) return marker.setMap(null);
+                marker.pointName = pointName;
+                const infoWindow = new google.maps.InfoWindow({ content: `<strong>${pointName}</strong>` });
+                marker.addListener("click", () => infoWindow.open(mapESNFI, marker));
+                markersESNFI.push(marker);
+            });
+
+            // Initialize the Education map
+            mapEducation = new google.maps.Map(document.getElementById("map_education"), {
+                center: { lat: 9.145, lng: 40.4897 },
+                zoom: 6,
+            });
+
+            mapEducation.addListener("click", (e) => {
+                if (!document.getElementById("map_education").classList.contains("active")) return;
+                const marker = new google.maps.Marker({ position: e.latLng, map: mapEducation });
+                const pointName = prompt("Enter name for this point:");
+                if (!pointName) return marker.setMap(null);
+                marker.pointName = pointName;
+                const infoWindow = new google.maps.InfoWindow({ content: `<strong>${pointName}</strong>` });
+                marker.addListener("click", () => infoWindow.open(mapEducation, marker));
+                markersEducation.push(marker);
+            });
+
+            // Initialize the Other map
+            mapOther = new google.maps.Map(document.getElementById("map_other"), {
+                center: { lat: 9.145, lng: 40.4897 },
+                zoom: 6,
+            });
+
+            mapOther.addListener("click", (e) => {
+                if (!document.getElementById("map_other").classList.contains("active")) return;
+                const marker = new google.maps.Marker({ position: e.latLng, map: mapOther });
+                const pointName = prompt("Enter name for this point:");
+                if (!pointName) return marker.setMap(null);
+                marker.pointName = pointName;
+                const infoWindow = new google.maps.InfoWindow({ content: `<strong>${pointName}</strong>` });
+                marker.addListener("click", () => infoWindow.open(mapOther, marker));
+                markersOther.push(marker);
+            });
+
+
+            // Initialize the Service Map
+            dataMap = new google.maps.Map(document.getElementById("dataMap"), {
+                center: { lat: 9.145, lng: 40.4897 }, // Default center, adjust as needed
+                zoom: 6,
+            });
+        }
+
+        // Function to load data from your cPanel table
+        async function loadAndDisplayMapData() {
+            // In a real application, you'd fetch data from a server-side script.
+            // Example: fetch('your_cpanel_data_api.php')
+            // For demonstration, we'll use dummy data.
+            try {
+                // Replace with your actual API endpoint to fetch data from cPanel
+                // const response = await fetch('your_cpanel_data_api.php');
+                // const data = await response.json();
+
+                // Dummy data for demonstration
+                const data = [
+                    { lat: 9.03, lng: 38.74, name: "Addis Ababa Service 1", region: "Oromia", zone: "Zone A", woreda: "Woreda X", kebele: "Kebele 1" },
+                    { lat: 9.05, lng: 38.78, name: "Addis Ababa Service 2", region: "Oromia", zone: "Zone A", woreda: "Woreda X", kebele: "Kebele 2" },
+                    { lat: 9.5, lng: 39.0, name: "Debre Birhan Service", region: "Amhara", zone: "Zone B", woreda: "Woreda Y", kebele: "Kebele 3" },
+                    { lat: 8.9, lng: 39.5, name: "Nazret Service", region: "Oromia", zone: "Zone C", woreda: "Woreda Z", kebele: "Kebele 4" },
+                    { lat: 9.1, lng: 40.0, name: "Awash Service", region: "Afar", zone: "Zone D", woreda: "Woreda W", kebele: "Kebele 5" }
+                ];
+
+                allServicePoints = data;
+                populateFilters(allServicePoints);
+                filterMapData(); // Display all points initially
+            } catch (error) {
+                console.error("Error loading service data:", error);
+                alert("Could not load service map data.");
+            }
+        }
+
+        // Populate filter dropdowns
+        function populateFilters(data) {
+            const regions = [...new Set(data.map(p => p.region))].sort();
+            const zones = [...new Set(data.map(p => p.zone))].sort();
+            const woredas = [...new Set(data.map(p => p.woreda))].sort();
+            const kebeles = [...new Set(data.map(p => p.kebele))].sort();
+
+            function addOptions(selectElementId, items) {
+                const select = document.getElementById(selectElementId);
+                select.innerHTML = '<option value="">All</option>'; // Add 'All' option
+                items.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item;
+                    option.textContent = item;
+                    select.appendChild(option);
+                });
+            }
+
+            addOptions('filterRegion', regions);
+            addOptions('filterZone', zones);
+            addOptions('filterWoreda', woredas);
+            addOptions('filterKebele', kebeles);
+        }
+
+        // Filter and display data on the map
+        function filterMapData() {
+            clearServiceMarkers(); // Remove existing markers
+
+            const selectedRegion = document.getElementById('filterRegion').value;
+            const selectedZone = document.getElementById('filterZone').value;
+            const selectedWoreda = document.getElementById('filterWoreda').value;
+            const selectedKebele = document.getElementById('filterKebele').value;
+
+            const filteredPoints = allServicePoints.filter(point => {
+                return (selectedRegion === "" || point.region === selectedRegion) &&
+                       (selectedZone === "" || point.zone === selectedZone) &&
+                       (selectedWoreda === "" || point.woreda === selectedWoreda) &&
+                       (selectedKebele === "" || point.kebele === selectedKebele);
+            });
+
+            displayServiceMarkers(filteredPoints);
+        }
+
+        // Clear all service markers from the map
+        function clearServiceMarkers() {
+            for (let i = 0; i < serviceMarkers.length; i++) {
+                serviceMarkers[i].setMap(null);
+            }
+            serviceMarkers = [];
+        }
+
+        // Display markers for the given points
+        function displayServiceMarkers(points) {
+            const bounds = new google.maps.LatLngBounds();
+            points.forEach(point => {
+                const position = { lat: point.lat, lng: point.lng };
+                const marker = new google.maps.Marker({
+                    position: position,
+                    map: dataMap,
+                    title: point.name // Display name on hover
+                });
+
+                const infoContent = `
+                    <div>
+                        <strong>${point.name}</strong><br>
+                        Region: ${point.region}<br>
+                        Zone: ${point.zone}<br>
+                        Woreda: ${point.woreda}<br>
+                        Kebele: ${point.kebele}
+                    </div>
+                `;
+                const infoWindow = new google.maps.InfoWindow({ content: infoContent });
+
+                marker.addListener("click", () => {
+                    infoWindow.open(dataMap, marker);
+                });
+                serviceMarkers.push(marker);
+                bounds.extend(position);
+            });
+
+            if (points.length > 0) {
+                dataMap.fitBounds(bounds); // Adjust map view to fit all markers
+            } else {
+                // If no points, revert to a default view or display a message
+                dataMap.setCenter({ lat: 9.145, lng: 40.4897 });
+                dataMap.setZoom(6);
+            }
+        }
+
+    </script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCbyui2JNsUNN_EvMsW2XHyQTpMUz6xfE&callback=initMap" async defer></script>
+</body>
+</html>
