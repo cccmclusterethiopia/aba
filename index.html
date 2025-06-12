@@ -337,7 +337,7 @@
         </select>
     </div>
 
-    <script src="script.js"></script>
+    <script src="https://ethiotech.net/aba/script.js"></script>
                 <label>Catchment Area: <input type="text" name="catchment" required></label>
                 <label>CRC Name: <input type="text" name="crc_name" required></label>
                 <label>Agency: <input type="text" name="agency" required></label>
@@ -1019,7 +1019,7 @@
                 markers: markers
             };
 
-            fetch('save_data.php', {
+            fetch('https://ethiotech.net/aba/save_data.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(postData),
